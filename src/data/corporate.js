@@ -1,0 +1,10 @@
+// Company facts shared by every Handyman product page (footer, contact links).
+// HANDYPAD keeps its own sales mailbox from V70.
+export const corporate = Object.freeze({
+  company: 'DLV Corporation',
+  legal_vi: 'CÔNG TY CP ĐẦU TƯ THƯƠNG MẠI DỊCH VỤ VÀ TƯ VẤN ĐỖ LÊ VŨ',
+  legal_en: 'DLV CORPORATION',
+  tax_code: '0307940363',
+  address: '29 Nguyen Van Quy Street, Tan Thuan Ward, Ho Chi Minh City, Vietnam',
+  phone: '(+84) 347 099 905', phone_href: 'tel:+84347099905', email: 'sales@dlvcorp.com',
+});
