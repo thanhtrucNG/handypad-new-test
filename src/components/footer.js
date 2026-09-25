@@ -41,7 +41,7 @@ export function createFooter() {
     body.append(detail);
     if (name === 'phone') {
       const chats = element('span', 'contact-chat-links');
-      for (const [text, url] of [['WhatsApp', `https://wa.me/${digits}`], ['Zalo', `https://zalo.me/${digits.replace(/^84/, '0')}`]]) {
+      for (const [text, url] of [['WhatsApp', `https://wa.me/${digits}`], ['Zalo', corporate.zalo_href]]) {
         const chat = element('a', 'contact-chat-link', text);
         chat.href = url; chat.target = '_blank'; chat.rel = 'noopener';
         chat.setAttribute('aria-label', t(`Chat on ${text}`));

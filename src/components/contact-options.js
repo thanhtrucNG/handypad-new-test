@@ -8,7 +8,7 @@ export function createContactOptions() {
   const channels = [
     { icon: 'phone', title: t('Call'), detail: corporate.phone, href: corporate.phone_href },
     { icon: 'whatsapp', title: 'WhatsApp', detail: t('Send a message'), href: `https://wa.me/${digits}` },
-    { icon: 'zalo', title: 'Zalo', detail: t('Send a message'), href: `https://zalo.me/${digits.replace(/^84/, '0')}` },
+    { icon: 'zalo', title: 'Zalo', detail: t('Send a message'), href: corporate.zalo_href },
   ];
   const list = element('ul', 'contact-options');
   for (const channel of channels) {
