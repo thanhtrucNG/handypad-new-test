@@ -9,11 +9,10 @@
   padding-block: 40px 20px;
 }
 
-/* Columns size to their content so the brand column stays narrow and
-   Company / Contact get the room they need; leftover space sits between them. */
+/* Two columns sized to their content: brand + tax code on the left, Contact on the right. */
 .footer-columns {
   display: grid;
-  grid-template-columns: auto auto auto;
+  grid-template-columns: auto auto;
   justify-content: space-between;
   column-gap: 28px;
   align-items: start;
@@ -24,9 +23,8 @@
   border-left: 1px solid rgba(255,255,255,.12);
 }
 
-/* HANDYPAD's tagline is longer than Hyperion's; keep the brand column narrow so
-   the one-line address still fits at 1296px+. */
-.footer-brand { max-width: 280px; }
+/* The tax code sits under the brand title in the same column. */
+.footer-brand .footer-tax { margin-top: 16px; }
 
 /* At full container width (1200px) every line fits unbroken. */
 @media (min-width: 1296px) {
@@ -193,10 +191,6 @@ a.contact-chat-link:focus-visible {
     gap: 28px 32px;
   }
 
-  .footer-brand {
-    grid-column: 1 / -1;
-  }
-
   .footer-columns > * + * {
     padding-left: 0;
     border-left: 0;
@@ -223,7 +217,6 @@ a.contact-chat-link:focus-visible {
     border-left: 0;
   }
 
-  .footer-identity,
   .footer-columns > .footer-contact {
     padding-top: 20px;
     border-top: 1px solid rgba(255,255,255,.12);

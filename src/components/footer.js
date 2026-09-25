@@ -9,21 +9,14 @@ export function createFooter() {
 
   const brand = element('div', 'footer-brand');
   const title = element('h2', 'footer-brand-title', 'HANDYPAD ');
-  title.append(element('span', 'footer-brand-secondary', `by ${corporate.company}`));
-  brand.append(title);
-
-  const identity = element('div', 'footer-identity');
+  title.append(element('span', 'footer-brand-secondary', `by ${corporate.legal_en}`));
   const tax = element('p', 'footer-tax');
   tax.append(
     element('span', 'tax-label', `${t('Tax code')}:`),
     document.createTextNode(' '),
     element('span', 'tax-value', corporate.tax_code),
   );
-  identity.append(
-    element('h3', 'footer-heading', t('ABOUT US')),
-    element('p', 'footer-legal', corporate.legal_en),
-    tax,
-  );
+  brand.append(title, tax);
 
   const contact = element('section', 'footer-contact');
   contact.id = 'contact';
@@ -61,7 +54,7 @@ export function createFooter() {
   }
 
   contact.append(heading, address);
-  columns.append(brand, identity, contact);
+  columns.append(brand, contact);
 
   inner.append(
     columns,
