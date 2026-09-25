@@ -25,7 +25,7 @@
 
 /* Step titles sit inside their card instead of straddling the top border. */
 .configurator .configuration-step > legend { float: left; width: 100%; margin: 0 0 16px; padding: 0; }
-.configurator .configuration-step > legend + * { clear: both; }
+.configurator .configuration-step > legend ~ * { clear: both; } /* every block after the title, even when a hidden hint sits first */
 .configurator .configuration-step[data-state='locked'] > legend { margin-bottom: 0; }
 .configurator .configuration-step:not([data-state='locked']) + .configuration-step[data-state='locked'] > legend,
 .configurator .configuration-step[data-state='locked']:first-child > legend { margin-bottom: 4px; }
