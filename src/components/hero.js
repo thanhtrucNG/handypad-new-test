@@ -4,7 +4,7 @@ import { scrollToElement } from '../lib/scroll.js';
 import { linkToSpecs } from '../lib/specs.js';
 
 const GALLERY = ['single', 'double', 'pair', 'reflective', 'one-metre'];
-const STATS = [['3', 'sizes'], ['2', 'add-ons'], ['600D', 'canvas grade'], ['15M', 'quick response']];
+const STATS = [['3', 'sizes'], ['2', 'add-ons'], ['3M-grade', 'reflective strip'], ['15 min', 'quick response']];
 const GALLERY_INTERVAL = 3500;
 
 function createGallery() {
@@ -74,7 +74,7 @@ export function createHero() {
   stats.setAttribute('aria-label', t('Product features'));
   for (const [value, label] of STATS) {
     const item = element('div', 'hero-stat');
-    item.append(element('dt', '', t(label)), element('dd', '', value));
+    item.append(element('dt', '', t(label)), element('dd', '', t(value)));
     stats.append(item);
   }
 

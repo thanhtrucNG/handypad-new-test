@@ -137,7 +137,8 @@ const vi = {
   'BUY NOW': 'MUA NGAY', 'VIEW SPECS': 'XEM THÔNG SỐ',
   // The VI headline starts with "HandyPad", so the eyebrow names the maker only.
   'HANDYPAD BY HANDYMAN': 'SẢN PHẨM CỦA HANDYMAN', 'Skip to order': 'Chuyển đến phần đặt hàng',
-  'sizes': 'kích thước', 'add-ons': 'phụ kiện bổ sung', 'canvas grade': 'chuẩn vải bạt', 'quick response': 'phản hồi nhanh',
+  'sizes': 'kích thước', 'add-ons': 'phụ kiện bổ sung', 'reflective strip': 'dải phản quang', 'quick response': 'phản hồi nhanh chóng',
+  '3M-grade': 'Chuẩn 3M', '15 min': '15 phút',
   'Product features': 'Đặc điểm sản phẩm', 'HANDYPAD product showcase': 'Hình ảnh sản phẩm HANDYPAD',
   'Drag to browse. Select a pad to order it.': 'Kéo để xem. Chọn một mẫu để đặt hàng.',
   'Order this pad': 'Đặt mẫu này', 'HANDYPAD product range': 'Dòng sản phẩm HANDYPAD',

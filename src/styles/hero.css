@@ -14,9 +14,9 @@
 .hero-action:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
 
 /* Proof figures: same quiet treatment as Hyperion's hero stats, divided by hairlines. */
-.hero-stats { display: grid; grid-template-columns: repeat(4, max-content); gap: var(--space-8); margin: var(--space-8) 0 0; }
+.hero-stats { display: grid; grid-template-columns: repeat(4, max-content); gap: var(--space-6); margin: var(--space-8) 0 0; }
 .hero-stat { display: flex; flex-direction: column-reverse; min-width: 0; }
-.hero-stat + .hero-stat { padding-left: var(--space-8); border-left: 1px solid rgb(255 255 255 / 20%); }
+.hero-stat + .hero-stat { padding-left: var(--space-6); border-left: 1px solid rgb(255 255 255 / 20%); }
 .hero-stat dd { margin: 0; color: #fff; font-size: 27px; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
 .hero-stat dt { color: #b6c9d7; font-size: var(--text-sm); }
 
@@ -25,10 +25,13 @@
 .hero-gallery-image { grid-area: 1 / 1; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .6s ease; filter: drop-shadow(0 22px 32px rgb(0 12 24 / 45%)); }
 .hero-gallery-image.is-active { opacity: 1; }
 
-@media (max-width: 1023px) {
-  .hero-inner { grid-template-columns: minmax(0, 1fr) 260px; gap: var(--space-6); }
+/* Four stats across need about 640px (Vietnamese labels are longer); below 1200px use 2 × 2. */
+@media (max-width: 1199px) {
   .hero-stats { grid-template-columns: repeat(2, max-content); gap: var(--space-4) var(--space-8); }
   .hero-stat:nth-child(odd) { padding-left: 0; border-left: 0; }
+}
+@media (max-width: 1023px) {
+  .hero-inner { grid-template-columns: minmax(0, 1fr) 260px; gap: var(--space-6); }
 }
 @media (max-width: 767px) {
   .hero-inner { grid-template-columns: 1fr; padding-block: var(--space-8) var(--space-10); gap: var(--space-6); }
