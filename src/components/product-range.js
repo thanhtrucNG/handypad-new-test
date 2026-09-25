@@ -3,7 +3,6 @@ import { language, t } from '../lib/locale.js';
 import { formatPrice, getProductName, getProductPrice } from '../lib/storefront.js';
 import { RANGE } from '../data/products.js';
 
-const SPEED_PX_PER_SECOND = 22;
 const DRAG_THRESHOLD = 6;
 
 function createCard(product, { decorative }) {
@@ -48,24 +47,11 @@ export function createProductRange() {
   marquee.append(track);
   section.append(heading, marquee);
 
-  // Continuous slow glide; the customer can pause (hover/focus) or drag it by hand.
-  // It keeps moving even when the OS reports reduced motion (e.g. Windows "Animation
-  // effects" off): the motion is slow and stops as soon as the pointer is over it.
-  let offset = 0, loopWidth = 0, lastTime = performance.now();
-  let hovering = false, focused = false, dragging = false, resumeAt = 0;
+  // The strip stays still; customers drag or swipe it by hand (it loops in both directions).
+  let offset = 0, loopWidth = 0, dragging = false;
   const wrap = value => loopWidth > 0 ? ((value % loopWidth) + loopWidth) % loopWidth : value;
   const render = () => { track.style.transform = `translate3d(${-offset}px, 0, 0)`; };
   const measure = () => { loopWidth = groups[0].getBoundingClientRect().width + (parseFloat(getComputedStyle(track).columnGap) || 0); offset = wrap(offset); render(); };
-  const tick = now => {
-    const elapsed = Math.min((now - lastTime) / 1000, .08);
-    lastTime = now;
-    if (!hovering && !focused && !dragging && now >= resumeAt && !document.hidden && loopWidth > 0) {
-      offset = wrap(offset + SPEED_PX_PER_SECOND * elapsed);
-      render();
-    }
-    requestAnimationFrame(tick);
-  };
-
   let pointerId = null, startX = 0, startOffset = 0, suppressClick = false;
   marquee.addEventListener('pointerdown', event => {
     if (event.pointerType === 'mouse' && event.button !== 0) return;
@@ -88,8 +74,6 @@ export function createProductRange() {
     if (!dragging) return;
     dragging = false;
     marquee.classList.remove('is-dragging');
-    resumeAt = performance.now() + (event.pointerType === 'mouse' ? 0 : 1500);
-    lastTime = performance.now();
   };
   marquee.addEventListener('pointerup', endDrag);
   marquee.addEventListener('pointercancel', endDrag);
@@ -100,23 +84,19 @@ export function createProductRange() {
     if (!card) return;
     window.dispatchEvent(new CustomEvent('handypad:configure', { detail: { size: card.dataset.size, reflective: card.dataset.reflective === 'true' } }));
   }, true);
-  marquee.addEventListener('mouseenter', () => { hovering = true; });
-  marquee.addEventListener('mouseleave', () => { hovering = false; lastTime = performance.now(); });
-  // Keyboard users: pause and bring the focused card fully into view.
+  // Keyboard users: bring the focused card fully into view.
   marquee.addEventListener('focusin', event => {
     const card = event.target.closest('.range-card');
     if (!card || !card.matches(':focus-visible')) return; // A mouse click is not keyboard browsing.
-    focused = true;
     const box = marquee.getBoundingClientRect(), cardBox = card.getBoundingClientRect();
     if (cardBox.left < box.left || cardBox.right > box.right) {
       offset = wrap(offset + cardBox.left - box.left - (box.width - cardBox.width) / 2);
       render();
     }
   });
-  marquee.addEventListener('focusout', event => { if (!marquee.contains(event.relatedTarget)) { focused = false; lastTime = performance.now(); } });
 
   if ('ResizeObserver' in window) new ResizeObserver(measure).observe(groups[0]);
   addEventListener('resize', measure, { passive: true });
-  requestAnimationFrame(() => { measure(); requestAnimationFrame(tick); });
+  requestAnimationFrame(measure);
   return section;
 }
