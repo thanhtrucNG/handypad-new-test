@@ -10,7 +10,7 @@ export function createFooter() {
   const brand = element('div', 'footer-brand');
   const title = element('h2', 'footer-brand-title', 'HANDYPAD ');
   title.append(element('span', 'footer-brand-secondary', `by ${corporate.company}`));
-  brand.append(title, element('p', 'footer-tagline', t('Durable, reusable and available for product enquiries, quotation requests and sample support.')));
+  brand.append(title);
 
   const identity = element('div', 'footer-identity');
   const tax = element('p', 'footer-tax');

@@ -155,6 +155,5 @@ const vi = {
   'Choose size': 'Chọn kích thước', 'Add-ons': 'Phụ kiện bổ sung', 'Quantity & add to cart': 'Số lượng & thêm vào giỏ',
   'from': 'từ', 'Optional': 'Không bắt buộc',
   'Select a size first': 'Chọn kích thước trước',
-  'Durable, reusable and available for product enquiries, quotation requests and sample support.': 'Bền, tái sử dụng và hỗ trợ tư vấn sản phẩm, báo giá và mẫu thử.',
 };
 export const t = text => language === 'vi' ? (vi[text] ?? text) : text;
