@@ -44,8 +44,9 @@
 }
 
 .footer-brand-secondary {
-  display: block;
-  margin-top: 4px;
+  /* Same line as HANDYPAD; on very narrow screens it wraps as a whole. */
+  display: inline-block;
+  white-space: nowrap;
   color: var(--hyperion-red, #e63720);
   font-size: 16px;
   font-weight: 600;
@@ -226,4 +227,10 @@ a.contact-chat-link:focus-visible {
     min-height: 32px;
     padding: 4px 12px;
   }
+}
+
+/* Keep "HANDYPAD by DLV CORPORATION" on one line on the smallest phones. */
+@media (max-width: 400px) {
+  .footer-brand-title { font-size: 26px; }
+  .footer-brand-secondary { font-size: 14px; }
 }
