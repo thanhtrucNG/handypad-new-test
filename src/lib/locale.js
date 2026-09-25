@@ -128,6 +128,8 @@ const vi = {
   'This SKU is not in your order.': 'Sản phẩm này không có trong đơn hàng.', 'Quantity is too large.': 'Số lượng quá lớn.',
   'Distinct SKU rows · Total quantity': 'Số loại sản phẩm · Tổng số tấm',
   'Chat on WhatsApp': 'Chat qua WhatsApp', 'Chat on Zalo': 'Chat qua Zalo',
+  'Call': 'Gọi điện', 'Send a message': 'Gửi tin nhắn',
+  'ABOUT US': 'VỀ CHÚNG TÔI',
   'Not sure which HANDYPAD option fits your worksite? Leave your contact details and our team will advise you.': 'Chưa chắc lựa chọn HANDYPAD nào phù hợp với công trường của bạn? Hãy để lại thông tin liên hệ, đội ngũ của chúng tôi sẽ tư vấn.',
   'PRODUCT RANGE': 'DÒNG SẢN PHẨM', 'WHY HANDYPAD': 'HANDYPAD CÓ GÌ?', 'SPECS': 'THÔNG SỐ',
   'Simple impact protection': 'HandyPad', 'for demanding worksites.': 'Đệm bảo vệ va chạm công trình',

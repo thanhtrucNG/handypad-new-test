@@ -1,6 +1,6 @@
 import { element } from '../lib/dom.js';
 import { language, t } from '../lib/locale.js';
-import { createContactSalesModal } from './contact-sales.js';
+import { createContactOptions } from './contact-options.js';
 import { scrollToElement } from '../lib/scroll.js';
 import { linkToSpecs } from '../lib/specs.js';
 
@@ -22,14 +22,6 @@ export function createHeader() {
   logo.width = 584;
   logo.height = 143;
   brand.append(logo);
-
-  let storage;
-  try {
-    storage = window.sessionStorage;
-  } catch {
-    /* Header remains usable without storage. */
-  }
-  const contactModal = createContactSalesModal(storage);
 
   const nav = element('nav', 'header-actions');
   nav.setAttribute('aria-label', t('Menu'));
@@ -58,13 +50,10 @@ export function createHeader() {
 
   links.append(linkToSpecs(element('a', 'header-section-link header-catalogue-link', t('SPECS'))));
 
-  const mobileSales = element('button', 'header-contact-sales header-contact-sales--menu', t('CONTACT SALES'));
-  mobileSales.type = 'button';
-  mobileSales.addEventListener('click', () => {
-    close();
-    contactModal.open(mobileSales);
-  });
-  links.append(mobileSales);
+  // Phone menu: the contact channels sit directly in the menu.
+  const menuContact = element('div', 'header-contact-menu');
+  menuContact.append(element('p', 'header-contact-menu-title', t('CONTACT SALES')), createContactOptions());
+  links.append(menuContact);
 
   const locales = element('div', 'language-switch');
   locales.setAttribute('aria-label', 'Language / Ngôn ngữ');
@@ -80,15 +69,31 @@ export function createHeader() {
       if (code === language) return;
       const url = new URL(location.href);
       url.searchParams.set('lang', code);
-      // q/group are already represented by URL state; configurator/contact drafts use session storage.
+      // Configurator and checkout drafts live in storage, so they survive the reload.
       location.assign(url);
     });
     locales.append(button);
   }
 
-  const desktopSales = element('button', 'header-contact-sales header-contact-sales--desktop', t('CONTACT SALES'));
+  // Desktop: CONTACT SALES opens a small panel with the three channels.
+  const salesWrap = element('div', 'header-contact header-contact-sales--desktop');
+  const desktopSales = element('button', 'header-contact-sales', t('CONTACT SALES'));
   desktopSales.type = 'button';
-  desktopSales.addEventListener('click', () => contactModal.open(desktopSales));
+  const salesPanel = element('div', 'header-contact-panel');
+  salesPanel.id = 'header-contact-panel';
+  salesPanel.hidden = true;
+  salesPanel.append(createContactOptions());
+  desktopSales.setAttribute('aria-controls', salesPanel.id);
+  desktopSales.setAttribute('aria-expanded', 'false');
+  salesWrap.append(desktopSales, salesPanel);
+  function setSalesOpen(open) {
+    salesPanel.hidden = !open;
+    desktopSales.setAttribute('aria-expanded', String(open));
+  }
+  desktopSales.addEventListener('click', () => setSalesOpen(salesPanel.hidden));
+  salesPanel.addEventListener('click', event => { if (event.target.closest('a')) setSalesOpen(false); });
+  document.addEventListener('pointerdown', event => { if (!salesWrap.contains(event.target)) setSalesOpen(false); });
+  salesWrap.addEventListener('focusout', event => { if (event.relatedTarget && !salesWrap.contains(event.relatedTarget)) setSalesOpen(false); });
 
   const toggle = element('button', 'header-menu', t('Menu'));
   toggle.type = 'button';
@@ -113,7 +118,11 @@ export function createHeader() {
   });
 
   header.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && narrow.matches && !contactModal.element.open) {
+    if (event.key !== 'Escape') return;
+    if (!salesPanel.hidden) {
+      setSalesOpen(false);
+      desktopSales.focus();
+    } else if (narrow.matches) {
       close();
       toggle.focus();
     }
@@ -122,8 +131,8 @@ export function createHeader() {
   narrow.addEventListener('change', close);
   close();
 
-  nav.append(links, locales, desktopSales, toggle);
+  nav.append(links, locales, salesWrap, toggle);
   inner.append(brand, nav);
-  header.append(inner, contactModal.element);
+  header.append(inner);
   return header;
 }

@@ -20,7 +20,7 @@ export function createFooter() {
     element('span', 'tax-value', corporate.tax_code),
   );
   identity.append(
-    element('h3', 'footer-heading', t('Company')),
+    element('h3', 'footer-heading', t('ABOUT US')),
     element('p', 'footer-legal', corporate.legal_vi),
     element('p', 'footer-legal', corporate.legal_en),
     tax,

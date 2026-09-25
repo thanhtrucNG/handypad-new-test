@@ -22,3 +22,24 @@
   .size-option .option-detail, .size-option .option-price { font-size: 12px; white-space: normal; }
   .addon-options { grid-template-columns: 1fr; }
 }
+
+/* Step titles sit inside their card instead of straddling the top border. */
+.configurator .configuration-step > legend { float: left; width: 100%; margin: 0 0 16px; padding: 0; }
+.configurator .configuration-step > legend + * { clear: both; }
+.configurator .configuration-step[data-state='locked'] > legend { margin-bottom: 0; }
+.configurator .configuration-step:not([data-state='locked']) + .configuration-step[data-state='locked'] > legend,
+.configurator .configuration-step[data-state='locked']:first-child > legend { margin-bottom: 4px; }
+
+/* Only the single next locked step is a card with a hint. Contact & Shipping starts a
+   new group, so while an order step above is still locked it collapses to a title row. */
+.configurator:has(.configuration-steps > [data-state='locked']) .order-completion > .configuration-step[data-state='locked']:first-child {
+  padding-block: 2px; border-color: transparent; background: transparent; box-shadow: none;
+}
+.configurator:has(.configuration-steps > [data-state='locked']) .order-completion > .configuration-step[data-state='locked']:first-child > legend { margin-bottom: 0; }
+.configurator:has(.configuration-steps > [data-state='locked']) .order-completion > .configuration-step[data-state='locked']:first-child .locked-message {
+  position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+/* Collapsed title rows line up with the text inside the cards. */
+.configurator .configuration-step[data-state='locked'] { padding-inline: 20px; }
+.configurator .configuration-step[data-state='locked']:first-child,
+.configurator .configuration-step:not([data-state='locked']) + .configuration-step[data-state='locked'] { padding-block: 14px; }
