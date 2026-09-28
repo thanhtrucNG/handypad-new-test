@@ -1,8 +1,6 @@
 import { element } from '../lib/dom.js';
-import { language, t } from '../lib/locale.js';
+import { t } from '../lib/locale.js';
 import { linkToSpecs } from '../lib/specs.js';
-import { formatPrice, getProductName, getProductPrice } from '../lib/storefront.js';
-import { findProduct } from '../data/products.js';
 
 // Feature copy comes from the V70 "Why choose HANDYPAD?" section, shortened to card length.
 const FEATURES = [
@@ -12,39 +10,34 @@ const FEATURES = [
   { icon: 'stitch', title: 'Durable stitching', body: 'Sewn, not glued — holds up through repeated strip-downs and re-erects.' },
 ];
 
-// Each photo is paired with the pad it shows (the coupler photo shows the 1 Metre so all three sizes appear).
+// Each photo reveals a slogan picture (1440×1080, English lettering; shown on both EN and VI pages).
 const PHOTOS = [
-  { slot: 'main', file: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers', size: 'single' },
-  { slot: 'worker', file: 'worker-pad.jpg', width: 403, height: 403, alt: 'Worker on scaffold next to a HANDYPAD pad', size: 'double' },
-  { slot: 'coupler', file: 'coupler.webp', width: 1430, height: 1080, alt: 'Worker tightening a scaffold coupler', size: 'one_metre' },
+  { slot: 'main', file: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers',
+    slogan: 'slogan-protection.webp', sloganAlt: 'HANDYPAD impact protection for safer worksites.' },
+  { slot: 'worker', file: 'worker-pad.jpg', width: 403, height: 403, alt: 'Worker on scaffold next to a HANDYPAD pad',
+    slogan: 'slogan-risks.webp', sloganAlt: 'Reducing impact risks on site to people & equipment.' },
+  { slot: 'coupler', file: 'coupler.webp', width: 1430, height: 1080, alt: 'Worker tightening a scaffold coupler',
+    slogan: 'slogan-safer.webp', sloganAlt: 'Helping you build safer worksites with HANDYPAD.' },
 ];
 
+function tileImage(className, file, alt, width, height) {
+  const image = element('img', className);
+  image.src = `./src/assets/products/handypad/why/${file}`;
+  image.alt = alt;
+  image.width = width;
+  image.height = height;
+  image.loading = 'lazy';
+  image.decoding = 'async';
+  return image;
+}
+
 function createPhotoTile(photo) {
-  const product = findProduct(photo.size);
-  const name = getProductName(product, language);
-  const price = getProductPrice(product, language);
-  const tile = element('button', `feature-tile feature-tile--${photo.slot}`);
-  tile.type = 'button';
-  tile.dataset.size = photo.size;
-  tile.setAttribute('aria-label', `${t(photo.alt)}. ${t('Order this pad')}: ${name}, ${t('from')} ${formatPrice(price.amount, price.currency)}`);
-  const picture = element('img', 'feature-photo');
-  picture.src = `./src/assets/products/handypad/why/${photo.file}`;
-  picture.alt = '';
-  picture.width = photo.width;
-  picture.height = photo.height;
-  picture.loading = 'lazy';
-  picture.decoding = 'async';
-  const shot = element('img', 'feature-tile-product');
-  shot.src = product.image_url;
-  shot.alt = '';
-  shot.width = 800;
-  shot.height = 800;
-  shot.loading = 'lazy';
-  shot.decoding = 'async';
-  const label = element('span', 'feature-tile-label');
-  label.append(element('span', 'feature-tile-name', name.replace(/^HANDYPAD /, '')), element('span', 'feature-tile-price', `${t('from')} ${formatPrice(price.amount, price.currency)}`));
-  label.setAttribute('aria-hidden', 'true');
-  tile.append(picture, shot, label);
+  const tile = element('div', `feature-tile feature-tile--${photo.slot}`);
+  // Both images carry alt text, so screen readers get the photo and the slogan without hovering.
+  tile.append(
+    tileImage('feature-photo', photo.file, t(photo.alt), photo.width, photo.height),
+    tileImage('feature-tile-slogan', photo.slogan, photo.sloganAlt, 1440, 1080),
+  );
   return tile;
 }
 
@@ -89,22 +82,15 @@ export function createWhyHandypad() {
   copy.append(heading, features, link);
 
   // Photo collage: pads in use (large) beside the worker and the bare coupler they cover.
-  // Hover / keyboard focus reveals the related pad with its price; clicking orders it.
-  // Touch has no hover, so the first tap reveals and a second tap orders.
+  // Hover swaps a photo for its slogan picture; touch has no hover, so a tap toggles it.
   const visual = element('figure', 'feature-section-visual');
   const tiles = PHOTOS.map(photo => createPhotoTile(photo));
   visual.append(...tiles);
-  visual.addEventListener('pointerdown', event => { visual.dataset.pointer = event.pointerType; });
-  visual.addEventListener('click', event => {
+  visual.addEventListener('pointerup', event => {
     const tile = event.target.closest('.feature-tile');
-    if (!tile) return;
-    const touch = ['touch', 'pen'].includes(visual.dataset.pointer);
-    if (touch && !tile.classList.contains('is-revealed')) {
-      tiles.forEach(other => other.classList.toggle('is-revealed', other === tile));
-      return;
-    }
-    tiles.forEach(other => other.classList.remove('is-revealed'));
-    window.dispatchEvent(new CustomEvent('handypad:configure', { detail: { size: tile.dataset.size, reflective: false } }));
+    if (!tile || event.pointerType === 'mouse') return;
+    const show = !tile.classList.contains('is-revealed');
+    tiles.forEach(other => other.classList.toggle('is-revealed', show && other === tile));
   });
   // A tap elsewhere puts a revealed tile back to its photo.
   document.addEventListener('pointerdown', event => {
