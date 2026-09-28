@@ -10,6 +10,12 @@ const FEATURES = [
   { icon: 'stitch', title: 'Durable stitching', body: 'Sewn, not glued — holds up through repeated strip-downs and re-erects.' },
 ];
 
+const PHOTOS = [
+  { slot: 'main', file: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers' },
+  { slot: 'worker', file: 'worker-pad.jpg', width: 403, height: 403, alt: 'Worker on scaffold next to a HANDYPAD pad' },
+  { slot: 'coupler', file: 'coupler.webp', width: 1430, height: 1080, alt: 'Worker tightening a scaffold coupler' },
+];
+
 const ICON_PATHS = {
   flame: '<path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.3-5.4 3.6-7.6.4 1.8 1.3 3 2.6 3.6-.2-2.9.9-5.6 3.2-7.8.2 3 1.4 4.6 2.6 6.3 1 1.5 1.5 3 1.5 4.9 0 4.2-2.9 6.8-7 6.8Z"/><path d="M12 21c-1.8 0-3-1.2-3-2.9 0-1.6 1.2-2.6 2.1-3.8.3 1 .9 1.6 1.6 1.9.6-.8 1-1.8 1-2.9 1.1 1.2 1.7 2.5 1.7 3.9 0 2.2-1.4 3.8-3.4 3.8Z"/>',
   shield: '<path d="M12 2.8 5.4 5.3v5.1c0 4.6 2.8 8.6 6.6 10.8 3.8-2.2 6.6-6.2 6.6-10.8V5.3L12 2.8Z"/>',
@@ -50,15 +56,18 @@ export function createWhyHandypad() {
   const copy = element('div', 'feature-section-copy');
   copy.append(heading, features, link);
 
+  // Static photo collage: pads in use (large) beside the worker and the bare coupler they cover.
   const visual = element('figure', 'feature-section-visual');
-  const image = element('img');
-  image.src = './src/assets/products/handypad/feature-visual.png';
-  image.alt = t('HANDYPAD 1 Metre Reflective impact protection pad');
-  image.width = 700;
-  image.height = 700;
-  image.loading = 'lazy';
-  image.decoding = 'async';
-  visual.append(image);
+  for (const photo of PHOTOS) {
+    const image = element('img', `feature-photo feature-photo--${photo.slot}`);
+    image.src = `./src/assets/products/handypad/why/${photo.file}`;
+    image.alt = t(photo.alt);
+    image.width = photo.width;
+    image.height = photo.height;
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    visual.append(image);
+  }
 
   inner.append(visual, copy);
   section.append(inner);
