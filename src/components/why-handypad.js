@@ -2,23 +2,40 @@ import { element } from '../lib/dom.js';
 import { t } from '../lib/locale.js';
 import { linkToSpecs } from '../lib/specs.js';
 
-// Feature copy comes from the V70 "Why choose HANDYPAD?" section, shortened to card length.
-const FEATURES = [
-  { icon: 'flame', title: 'Fireproof canvas', body: 'Flame-retardant outer canvas for hot-works zones — welding, grinding and cutting decks.' },
-  { icon: 'shield', title: 'Closed-cell foam sleeve', body: "Wraps couplers and tube ends so straps, tarps and hands don't meet a sharp edge." },
-  { icon: 'eye', title: 'Reflective tape', body: '3M-grade reflective strip keeps scaffold visible on low-light and night shifts.' },
-  { icon: 'stitch', title: 'Durable stitching', body: 'Sewn, not glued — holds up through repeated strip-downs and re-erects.' },
+// Shopify-style story: each sentence owns three photos in a draggable strip.
+// Hovering a photo reveals its slogan picture (English lettering, shown on both EN and VI pages).
+// Every tile takes its photo's own shape (width / height), so no photo is cropped.
+const STORY = [
+  { sentence: 'Fireproof canvas for hot works.', tiles: [
+    { photo: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers',
+      slogan: 'slogan-protection.webp', sloganAlt: 'HANDYPAD impact protection for safer worksites.' },
+    { photo: 'fire-grinding.webp', width: 1536, height: 1024, alt: 'HANDYPAD pad beside grinding sparks on a scaffold',
+      slogan: 'slogan-safer.webp', sloganAlt: 'Helping you build safer worksites with HANDYPAD.' },
+    { photo: 'worker-pad.jpg', width: 403, height: 403, alt: 'Worker on scaffold next to a HANDYPAD pad',
+      slogan: 'slogan-risks.webp', sloganAlt: 'Reducing impact risks on site to people & equipment.' },
+  ] },
+  { sentence: '3M-grade reflective tape for night shifts.', tiles: [
+    { photo: 'reflective-night.webp', width: 1536, height: 1024, alt: 'Reflective HANDYPAD pads on scaffold at night',
+      slogan: 'slogan-solas.webp', sloganAlt: 'SOLAS grade marine reflective tape.' },
+    { photo: 'reflective-tape.webp', width: 1254, height: 1254, alt: 'Rolls of reflective tape',
+      slogan: 'slogan-tested.webp', sloganAlt: 'Tested for the temperature range & UV exposure marine equipment requires.' },
+    { photo: 'reflective-offshore.webp', width: 1536, height: 1024, alt: 'Reflective HANDYPAD pads on an offshore platform at night',
+      slogan: 'slogan-standards.webp', sloganAlt: 'Built to the visibility & durability standards required by marine & coast guard programs.' },
+  ] },
+  { sentence: 'Stitching that outlasts every strip-down.', tiles: [
+    { photo: 'coupler.webp', width: 1431, height: 1080, alt: 'Worker tightening a scaffold coupler',
+      slogan: 'slogan-stitching.webp', sloganAlt: 'Durable stitching.' },
+    // Transparent cut-out: sits on a soft backdrop instead of a photo background.
+    { photo: 'pads-cutout.webp', width: 1033, height: 829, alt: 'HANDYPAD Double and Single pads', cutout: true,
+      slogan: 'slogan-sewn.webp', sloganAlt: 'Sewn, not glued.' },
+    { photo: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers',
+      slogan: 'slogan-holds.webp', sloganAlt: 'Holds up through repeated strip-downs & re-erects.' },
+  ] },
 ];
-
-// Each photo reveals a slogan picture (1440×1080, English lettering; shown on both EN and VI pages).
-const PHOTOS = [
-  { slot: 'main', file: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers',
-    slogan: 'slogan-protection.webp', sloganAlt: 'HANDYPAD impact protection for safer worksites.' },
-  { slot: 'worker', file: 'worker-pad.jpg', width: 403, height: 403, alt: 'Worker on scaffold next to a HANDYPAD pad',
-    slogan: 'slogan-risks.webp', sloganAlt: 'Reducing impact risks on site to people & equipment.' },
-  { slot: 'coupler', file: 'coupler.webp', width: 1430, height: 1080, alt: 'Worker tightening a scaffold coupler',
-    slogan: 'slogan-safer.webp', sloganAlt: 'Helping you build safer worksites with HANDYPAD.' },
-];
+const DRAG_THRESHOLD = 6;
+const AUTOPLAY_MS = 5000; // time each set stays before the next one slides in
+const GLIDE_MS = 1100;
+const easeInOut = p => (p < .5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2);
 
 function tileImage(className, file, alt, width, height) {
   const image = element('img', className);
@@ -31,62 +48,168 @@ function tileImage(className, file, alt, width, height) {
   return image;
 }
 
-function createPhotoTile(photo) {
-  const tile = element('div', `feature-tile feature-tile--${photo.slot}`);
+function createTile(tile) {
+  // All tiles share one height; each is as wide as its photo's shape needs.
+  const root = element('div', `feature-tile story-tile${tile.cutout ? ' story-tile--cutout' : ''}`);
+  root.style.aspectRatio = `${tile.width} / ${tile.height}`;
+  const photo = tileImage('feature-photo', tile.photo, t(tile.alt), tile.width, tile.height);
   // Both images carry alt text, so screen readers get the photo and the slogan without hovering.
-  tile.append(
-    tileImage('feature-photo', photo.file, t(photo.alt), photo.width, photo.height),
-    tileImage('feature-tile-slogan', photo.slogan, photo.sloganAlt, 1440, 1080),
-  );
-  return tile;
-}
-
-const ICON_PATHS = {
-  flame: '<path d="M12 21c-3.9 0-6.5-2.6-6.5-6.2 0-3.3 2.3-5.4 3.6-7.6.4 1.8 1.3 3 2.6 3.6-.2-2.9.9-5.6 3.2-7.8.2 3 1.4 4.6 2.6 6.3 1 1.5 1.5 3 1.5 4.9 0 4.2-2.9 6.8-7 6.8Z"/><path d="M12 21c-1.8 0-3-1.2-3-2.9 0-1.6 1.2-2.6 2.1-3.8.3 1 .9 1.6 1.6 1.9.6-.8 1-1.8 1-2.9 1.1 1.2 1.7 2.5 1.7 3.9 0 2.2-1.4 3.8-3.4 3.8Z"/>',
-  shield: '<path d="M12 2.8 5.4 5.3v5.1c0 4.6 2.8 8.6 6.6 10.8 3.8-2.2 6.6-6.2 6.6-10.8V5.3L12 2.8Z"/>',
-  eye: '<path d="M2.3 12s3.5-5.1 9.7-5.1 9.7 5.1 9.7 5.1-3.5 5.1-9.7 5.1S2.3 12 2.3 12Z"/><circle cx="12" cy="12" r="2.7"/>',
-  stitch: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M7 9h2m2.5 0h2m2.5 0h1M7 15h2m2.5 0h2m2.5 0h1"/>',
-};
-
-function createFeature(feature) {
-  const card = element('article', 'feature-card');
-  const icon = element('span', 'feature-card-icon');
-  icon.setAttribute('aria-hidden', 'true');
-  icon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[feature.icon]}</svg>`;
-  const copy = element('div', 'feature-card-copy');
-  copy.append(element('h3', '', t(feature.title)), element('p', '', t(feature.body)));
-  card.append(icon, copy);
-  return card;
+  root.append(photo, tileImage('feature-tile-slogan', tile.slogan, tile.sloganAlt, 1440, 1080));
+  return root;
 }
 
 export function createWhyHandypad() {
   const section = element('section', 'feature-section');
   section.id = 'why-handypad';
   section.setAttribute('aria-labelledby', 'why-handypad-title');
-  const inner = element('div', 'container feature-section-inner');
+  const inner = element('div', 'container');
 
-  const heading = element('div', 'feature-section-heading');
   // The red label is the section heading, as in Product Range.
   const title = element('h2', 'section-eyebrow', t('WHY HANDYPAD'));
   title.id = 'why-handypad-title';
   title.tabIndex = -1;
-  heading.append(title);
 
-  const features = element('div', 'feature-cards');
-  FEATURES.forEach(feature => features.append(createFeature(feature)));
+  const strip = element('div', 'story-strip');
+  strip.id = 'why-handypad-photos';
+  strip.tabIndex = 0;
+  strip.setAttribute('role', 'group');
+  strip.setAttribute('aria-label', t('WHY HANDYPAD'));
+  const track = element('div', 'story-track');
+  const sets = STORY.map(chapter => {
+    const set = element('div', 'story-set');
+    set.append(...chapter.tiles.map(createTile));
+    // Sum of the photos' width/height ratios: lets CSS pick the height at which this set fills the width.
+    set.style.setProperty('--set-ratio', chapter.tiles.reduce((sum, tile) => sum + tile.width / tile.height, 0).toFixed(4));
+    return set;
+  });
+  track.append(...sets);
+  strip.append(track);
+  const tiles = [...track.querySelectorAll('.feature-tile')];
+
+  // Sentences are inline spans (not <button>s) so they flow as one wrapping paragraph.
+  const text = element('p', 'story-text');
+  const phrases = STORY.map((chapter, index) => {
+    const phrase = element('span', 'story-phrase', t(chapter.sentence));
+    phrase.setAttribute('role', 'button');
+    phrase.tabIndex = 0;
+    phrase.setAttribute('aria-controls', strip.id);
+    // Only a click (or Enter / Space) changes the set; hovering just tints the sentence.
+    phrase.addEventListener('click', () => go(index));
+    phrase.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      go(index);
+    });
+    text.append(phrase, document.createTextNode(' '));
+    // The last sentence starts its own line (sentences 1–2 on the first line).
+    if (index === STORY.length - 2) text.append(element('br', 'story-break'));
+    return phrase;
+  });
 
   const link = linkToSpecs(element('a', 'feature-section-link'));
   link.append(element('span', '', t('View specs')), element('span', 'feature-section-link-arrow', '→'));
 
-  const copy = element('div', 'feature-section-copy');
-  copy.append(heading, features, link);
+  // Scroll positions: each set starts at its first tile; the last set may stop at the strip's end.
+  const maxScroll = () => strip.scrollWidth - strip.clientWidth;
+  const setStart = index => Math.min(sets[index].offsetLeft - track.offsetLeft, maxScroll());
+  let active = -1;
+  function setActive(index) {
+    if (index === active) return;
+    active = index;
+    phrases.forEach((phrase, i) => {
+      phrase.classList.toggle('is-active', i === index);
+      phrase.setAttribute('aria-pressed', String(i === index));
+    });
+  }
+  // Glide: an eased scroll (smoother than the browser's 'smooth'), with snapping off while it runs.
+  // While it runs, the target sentence stays lit instead of the sets it passes.
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let gliding = false, glideFrame = 0;
+  function endGlide() {
+    cancelAnimationFrame(glideFrame);
+    gliding = false;
+    strip.classList.remove('is-gliding');
+  }
+  function glideTo(left) {
+    endGlide();
+    const from = strip.scrollLeft;
+    if (Math.abs(left - from) < 2) return;
+    if (reduceMotion.matches) { strip.scrollLeft = left; return; }
+    gliding = true;
+    strip.classList.add('is-gliding');
+    const start = performance.now();
+    const step = now => {
+      const p = Math.min(1, (now - start) / GLIDE_MS);
+      strip.scrollLeft = from + (left - from) * easeInOut(p);
+      if (p < 1) glideFrame = requestAnimationFrame(step);
+      else endGlide();
+    };
+    glideFrame = requestAnimationFrame(step);
+  }
+  function go(index) {
+    setActive(index); // the sentence lights up as its set starts sliding in
+    glideTo(setStart(index));
+    schedule();
+  }
 
-  // Photo collage: pads in use (large) beside the worker and the bare coupler they cover.
-  // Hover swaps a photo for its slogan picture; touch has no hover, so a tap toggles it.
-  const visual = element('figure', 'feature-section-visual');
-  const tiles = PHOTOS.map(photo => createPhotoTile(photo));
-  visual.append(...tiles);
-  visual.addEventListener('pointerup', event => {
+  // Autoplay: every 5 s the next set slides in and the next sentence lights up, looping forever.
+  // It waits while the pointer is on the photos (so slogans can be read), while the section is
+  // off screen or the tab hidden; any manual move restarts the 5 s. (Reduced motion: sets switch without sliding.)
+  let autoTimer = 0, onPhotos = false, inView = false;
+  const playing = () => inView && !onPhotos && !drag?.moved && !document.hidden;
+  function schedule() {
+    clearTimeout(autoTimer);
+    if (playing()) autoTimer = setTimeout(() => go((active + 1) % sets.length), AUTOPLAY_MS);
+  }
+  strip.addEventListener('pointerenter', event => { if (event.pointerType === 'mouse') { onPhotos = true; schedule(); } });
+  strip.addEventListener('pointerleave', event => { if (event.pointerType === 'mouse') { onPhotos = false; schedule(); } });
+  document.addEventListener('visibilitychange', schedule);
+  new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; schedule(); }, { threshold: .3 }).observe(strip);
+
+  // Scrolling or dragging lights up the sentence whose photos lead the strip.
+  let frame = 0;
+  strip.addEventListener('scroll', () => {
+    if (gliding) return;
+    schedule(); // a manual scroll or swipe restarts the autoplay wait
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      const left = strip.scrollLeft;
+      let nearest = 0;
+      sets.forEach((_, index) => { if (Math.abs(setStart(index) - left) < Math.abs(setStart(nearest) - left)) nearest = index; });
+      setActive(nearest);
+    });
+  }, { passive: true });
+
+  // Mouse: click-and-drag scrolls the strip (touch scrolls natively). The pointer is captured
+  // only once it really moves, so a hover or plain click is left alone.
+  let drag = null;
+  strip.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    drag = { id: event.pointerId, x: event.clientX, left: strip.scrollLeft, moved: false };
+  });
+  strip.addEventListener('pointermove', event => {
+    if (!drag || event.pointerId !== drag.id) return;
+    const delta = event.clientX - drag.x;
+    if (!drag.moved && Math.abs(delta) >= DRAG_THRESHOLD) {
+      drag.moved = true;
+      endGlide();
+      strip.classList.add('is-dragging');
+      strip.setPointerCapture(drag.id);
+    }
+    if (drag.moved) strip.scrollLeft = drag.left - delta;
+  });
+  const endDrag = event => {
+    if (!drag || event.pointerId !== drag.id) return;
+    drag = null;
+    strip.classList.remove('is-dragging');
+    schedule();
+  };
+  strip.addEventListener('pointerup', endDrag);
+  strip.addEventListener('pointercancel', endDrag);
+  strip.addEventListener('dragstart', event => event.preventDefault());
+
+  // Touch has no hover: a tap toggles that photo's slogan (a swipe scrolls instead).
+  strip.addEventListener('pointerup', event => {
     const tile = event.target.closest('.feature-tile');
     if (!tile || event.pointerType === 'mouse') return;
     const show = !tile.classList.contains('is-revealed');
@@ -94,10 +217,11 @@ export function createWhyHandypad() {
   });
   // A tap elsewhere puts a revealed tile back to its photo.
   document.addEventListener('pointerdown', event => {
-    if (!visual.contains(event.target)) tiles.forEach(tile => tile.classList.remove('is-revealed'));
+    if (!strip.contains(event.target)) tiles.forEach(tile => tile.classList.remove('is-revealed'));
   });
 
-  inner.append(visual, copy);
+  setActive(0);
+  inner.append(title, text, strip, link);
   section.append(inner);
   return section;
 }
