@@ -1,5 +1,6 @@
 /* Why HANDYPAD — Shopify-style story: a paragraph of three sentences over a draggable photo strip.
-   Each sentence owns three photos (wide / narrow / wide); the lit sentence matches the photos in view. */
+   Each sentence owns a set of three uncropped photos; the lit sentence matches the set in view.
+   Spec: hyperion-imo-signs/docs/landing-page-template.md §1.2 (Story section). */
 .feature-section {
   position: relative; overflow: hidden; padding-block: 96px;
   background: #f8fbfe url('../assets/theme/theme-feature-sea.jpg') center bottom / cover no-repeat;

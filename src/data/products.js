@@ -1,7 +1,9 @@
 // HANDYPAD catalogue. Prices are copied from V70 (base price + add-on prices per size);
 // every size × add-on combination becomes one exact SKU so the cart, order summary and
 // checkout work on fixed products exactly like Hyperion.
-const itemImage = (size, finish) => `./src/assets/products/handypad/items/${size.replace('_', '-')}-${finish}.jpg`;
+// Reflective photos are WebP (replaced 2026-09-29); standard photos are still JPG.
+const itemImage = (size, finish) =>
+  `./src/assets/products/handypad/items/${size.replace('_', '-')}-${finish}.${finish === 'reflective' ? 'webp' : 'jpg'}`;
 
 export const SIZES = Object.freeze([
   { id: 'single', code: 'SGL', label_en: 'Single', label_vi: 'Single', dimensions: '24 × 10 × 5 cm', base: { VND: 550000, USD: 21.15 },
