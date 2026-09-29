@@ -151,7 +151,7 @@ const vi = {
   'Reflective HANDYPAD pads on an offshore platform at night': 'Đệm HANDYPAD phản quang trên giàn khoan ngoài khơi ban đêm',
   'HANDYPAD Double and Single pads': 'Đệm HANDYPAD Double và Single',
   'Fireproof canvas for hot works.': 'Vải chống cháy cho khu vực nhiệt độ cao.',
-  '3M-grade reflective tape for night shifts.': 'Băng phản quang 3M chuẩn SOLAS sáng rõ trong đêm.',
+  '3M-grade reflective tape for night shifts.': 'Băng phản quang 3M chuẩn SOLAS.',
   'Stitching that outlasts every strip-down.': 'Đường may bền bỉ qua nhiều lần tháo lắp.',
   'CONFIGURE & ORDER': 'CẤU HÌNH & ĐẶT HÀNG',
   'Choose size': 'Chọn kích thước', 'Add-ons': 'Phụ kiện bổ sung', 'Quantity & add to cart': 'Số lượng & thêm vào giỏ',
