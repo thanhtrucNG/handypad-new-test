@@ -89,7 +89,7 @@ export function createWhyHandypad() {
   track.append(...sets);
   strip.append(track);
   // One tile height for every set: the height at which the widest set (largest sum of photo
-  // width/height ratios) exactly fills the strip. Narrower sets spread the spare width into their gaps.
+  // width/height ratios) exactly fills the strip. In narrower sets CSS grows each tile by the same amount.
   const widest = Math.max(...STORY.map(chapter => chapter.tiles.reduce((sum, tile) => sum + tile.width / tile.height, 0)));
   strip.style.setProperty('--max-ratio', widest.toFixed(4));
   const tiles = [...track.querySelectorAll('.feature-tile')];
