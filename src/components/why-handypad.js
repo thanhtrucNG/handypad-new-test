@@ -4,14 +4,17 @@ import { linkToSpecs } from '../lib/specs.js';
 
 // Shopify-style story: each sentence owns three photos in a draggable strip.
 // Hovering a photo reveals its slogan picture (English lettering, shown on both EN and VI pages).
-// Every tile takes its photo's own shape (width / height), so no photo is cropped.
+// Tiles start at their photo's own shape; a set narrower than the strip scales its tiles up a little
+// (trimming top/bottom) to fill it. `position` frames that trim, `zoom` + `origin` move closer on a subject,
+// and `cutout` shows a transparent product shot whole on a soft backdrop.
 const STORY = [
   { sentence: 'Fireproof canvas for hot works.', tiles: [
-    { photo: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers',
+    { photo: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers', position: '50% 80%',
       slogan: 'slogan-protection.webp', sloganAlt: 'HANDYPAD impact protection for safer worksites.' },
     { photo: 'fire-grinding.webp', width: 1536, height: 1024, alt: 'HANDYPAD pad beside grinding sparks on a scaffold',
+      zoom: 1.3, origin: '75% 50%', // closer on the pad and sparks (right side); trims the bare pipe on the left
       slogan: 'slogan-safer.webp', sloganAlt: 'Helping you build safer worksites with HANDYPAD.' },
-    { photo: 'worker-pad.jpg', width: 403, height: 403, alt: 'Worker on scaffold next to a HANDYPAD pad',
+    { photo: 'worker-pad.jpg', width: 403, height: 403, alt: 'Worker on scaffold next to a HANDYPAD pad', position: '50% 40%',
       slogan: 'slogan-risks.webp', sloganAlt: 'Reducing impact risks on site to people & equipment.' },
   ] },
   { sentence: '3M-grade reflective tape for night shifts.', tiles: [
@@ -28,14 +31,15 @@ const STORY = [
     // Transparent cut-out: sits on a soft backdrop instead of a photo background.
     { photo: 'pads-cutout.webp', width: 1033, height: 829, alt: 'HANDYPAD Double and Single pads', cutout: true,
       slogan: 'slogan-sewn.webp', sloganAlt: 'Sewn, not glued.' },
-    { photo: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers',
+    { photo: 'scaffold-pads.webp', width: 1254, height: 1254, alt: 'HANDYPAD pads fitted to scaffold tubes and couplers', position: '50% 80%',
       slogan: 'slogan-holds.webp', sloganAlt: 'Holds up through repeated strip-downs & re-erects.' },
   ] },
 ];
 const DRAG_THRESHOLD = 6;
 const AUTOPLAY_MS = 5000; // time each set stays before the next one slides in
-const GLIDE_MS = 1100;
-const easeInOut = p => (p < .5 ? 4 * p ** 3 : 1 - (-2 * p + 2) ** 3 / 2);
+const GLIDE_MS = 1400;
+const GLIDE_DELAY_MS = 250; // pause between the sentence lighting up and the set starting to slide
+const easeInOut = p => (1 - Math.cos(Math.PI * p)) / 2; // ease-in-out sine: soft start and stop, no rush in the middle
 
 function tileImage(className, file, alt, width, height) {
   const image = element('img', className);
@@ -49,10 +53,12 @@ function tileImage(className, file, alt, width, height) {
 }
 
 function createTile(tile) {
-  // All tiles share one height; each is as wide as its photo's shape needs.
+  // All tiles share one height and start at their photo's shape (CSS may widen them to fill the set).
   const root = element('div', `feature-tile story-tile${tile.cutout ? ' story-tile--cutout' : ''}`);
   root.style.aspectRatio = `${tile.width} / ${tile.height}`;
   const photo = tileImage('feature-photo', tile.photo, t(tile.alt), tile.width, tile.height);
+  if (tile.position) photo.style.objectPosition = tile.position;
+  if (tile.zoom) { photo.style.scale = tile.zoom; photo.style.transformOrigin = tile.origin ?? 'center'; }
   // Both images carry alt text, so screen readers get the photo and the slogan without hovering.
   root.append(photo, tileImage('feature-tile-slogan', tile.slogan, tile.sloganAlt, 1440, 1080));
   return root;
@@ -78,12 +84,14 @@ export function createWhyHandypad() {
   const sets = STORY.map(chapter => {
     const set = element('div', 'story-set');
     set.append(...chapter.tiles.map(createTile));
-    // Sum of the photos' width/height ratios: lets CSS pick the height at which this set fills the width.
-    set.style.setProperty('--set-ratio', chapter.tiles.reduce((sum, tile) => sum + tile.width / tile.height, 0).toFixed(4));
     return set;
   });
   track.append(...sets);
   strip.append(track);
+  // One tile height for every set: the height at which the widest set (largest sum of photo
+  // width/height ratios) exactly fills the strip. Narrower sets spread the spare width into their gaps.
+  const widest = Math.max(...STORY.map(chapter => chapter.tiles.reduce((sum, tile) => sum + tile.width / tile.height, 0)));
+  strip.style.setProperty('--max-ratio', widest.toFixed(4));
   const tiles = [...track.querySelectorAll('.feature-tile')];
 
   // Sentences are inline spans (not <button>s) so they flow as one wrapping paragraph.
@@ -121,22 +129,32 @@ export function createWhyHandypad() {
       phrase.setAttribute('aria-pressed', String(i === index));
     });
   }
-  // Glide: an eased scroll (smoother than the browser's 'smooth'), with snapping off while it runs.
-  // While it runs, the target sentence stays lit instead of the sets it passes.
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let gliding = false, glideFrame = 0;
+  // Glide: an eased scroll of the strip (smoother than the browser's 'smooth'), snapping off while
+  // it runs. The sentence lights up first; after a short pause (and once the next set's pictures
+  // are decoded, so nothing stutters mid-slide) the set slides in. It always slides — also with
+  // reduced motion, at the business's request — and the target sentence stays lit throughout.
+  let gliding = false, glideFrame = 0, glideDelay = 0, glideId = 0;
   function endGlide() {
     cancelAnimationFrame(glideFrame);
+    clearTimeout(glideDelay);
+    glideId++;
     gliding = false;
     strip.classList.remove('is-gliding');
   }
-  function glideTo(left) {
+  const ready = set => Promise.all([...set.querySelectorAll('img')].map(img => {
+    img.loading = 'eager';
+    return img.decode().catch(() => {});
+  }));
+  async function glideTo(index) {
     endGlide();
-    const from = strip.scrollLeft;
-    if (Math.abs(left - from) < 2) return;
-    if (reduceMotion.matches) { strip.scrollLeft = left; return; }
+    const id = glideId;
     gliding = true;
     strip.classList.add('is-gliding');
+    const wait = new Promise(resolve => { glideDelay = setTimeout(resolve, GLIDE_DELAY_MS); });
+    await Promise.all([wait, Promise.race([ready(sets[index]), new Promise(resolve => setTimeout(resolve, 800))])]);
+    if (id !== glideId) return; // a newer glide or a drag took over
+    const from = strip.scrollLeft, left = setStart(index);
+    if (Math.abs(left - from) < 2) { endGlide(); return; }
     const start = performance.now();
     const step = now => {
       const p = Math.min(1, (now - start) / GLIDE_MS);
@@ -147,14 +165,14 @@ export function createWhyHandypad() {
     glideFrame = requestAnimationFrame(step);
   }
   function go(index) {
-    setActive(index); // the sentence lights up as its set starts sliding in
-    glideTo(setStart(index));
+    setActive(index); // the sentence lights up first; its set slides in just after
+    glideTo(index);
     schedule();
   }
 
   // Autoplay: every 5 s the next set slides in and the next sentence lights up, looping forever.
   // It waits while the pointer is on the photos (so slogans can be read), while the section is
-  // off screen or the tab hidden; any manual move restarts the 5 s. (Reduced motion: sets switch without sliding.)
+  // off screen or the tab hidden; any manual move restarts the 5 s.
   let autoTimer = 0, onPhotos = false, inView = false;
   const playing = () => inView && !onPhotos && !drag?.moved && !document.hidden;
   function schedule() {

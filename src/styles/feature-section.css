@@ -19,8 +19,9 @@
 .story-phrase:focus-visible { outline: 3px solid #2871b7; outline-offset: 2px; border-radius: 4px; }
 
 #why-handypad .container { container-type: inline-size; }
-/* Each set gets its own tile height, the one at which its photos (uncropped) exactly fill the page width. */
+/* One tile height for all sets: the widest set fills the width exactly at its photos' own shapes. */
 .story-strip {
+  --story-h: calc((100cqw - 32px) / var(--max-ratio, 4));
   position: relative; margin-top: 32px; overflow-x: auto; overscroll-behavior-x: contain;
   scroll-snap-type: x proximity; scrollbar-width: none; cursor: grab;
   user-select: none; -webkit-user-select: none;
@@ -32,8 +33,10 @@
 .story-strip img { pointer-events: none; -webkit-user-drag: none; }
 .story-track, .story-set { display: flex; gap: 16px; }
 .story-track { width: max-content; padding-bottom: 12px; /* room for tile shadows */ }
-/* Each set spans the strip width exactly, so the next set never peeks in at the edge. */
-.story-set { --story-h: calc((100cqw - 32px) / var(--set-ratio)); flex: none; min-width: 100cqw; scroll-snap-align: start; }
+/* Each set spans the strip width, so the next set never peeks in. In a narrower set every tile grows by
+   the same amount (16px gaps kept; photos trim a little top/bottom), so every set ends at the right edge. */
+.story-set { flex: none; min-width: 100cqw; scroll-snap-align: start; }
+.story-set .feature-tile { flex: 1 1 auto; }
 
 .feature-tile {
   position: relative; flex: none; height: var(--story-h); border-radius: 8px; overflow: hidden;
@@ -43,6 +46,7 @@
 .feature-photo { object-fit: cover; }
 /* The transparent cut-out sits on a soft studio backdrop. */
 .story-tile--cutout { background: radial-gradient(120% 70% at 50% 50%, #fff 0%, #e6edf3 100%); }
+.story-tile--cutout .feature-photo { object-fit: contain; } /* never trim the product itself */
 /* Slogan picture on white, whole slogan always visible; hidden until hover (or tap on touch). */
 .feature-tile-slogan { padding: 6%; object-fit: contain; background: #fff; opacity: 0; }
 .feature-tile.is-revealed .feature-tile-slogan { opacity: 1; }
@@ -63,13 +67,13 @@
 }
 @media (max-width: 1023px) {
   .feature-section { padding-block: 64px; }
-  .story-set { --story-h: 260px; } /* tablets: fixed height, drag through the photos */
+  .story-strip { --story-h: 260px; } /* tablets: fixed height, drag through the photos */
 }
 @media (max-width: 767px) {
   .feature-section { padding-block: 48px; background-size: auto 100%; }
   .story-text { font-size: 22px; }
   .story-break { display: none; } /* phones: let the paragraph wrap naturally */
   .story-strip { margin-top: 24px; }
-  .story-set { --story-h: 240px; }
+  .story-strip { --story-h: 240px; }
   .story-track, .story-set { gap: 12px; }
 }
