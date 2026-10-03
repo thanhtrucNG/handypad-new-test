@@ -10,7 +10,7 @@
 
 a.footer-link {
   display: inline-flex; align-items: center; gap: 8px; min-height: 0; padding: 0;
-  color: #fff; font-size: 16px; line-height: 1.4; font-weight: 600; text-decoration: none; white-space: nowrap;
+  color: #fff; font-size: 18px; line-height: 1.4; font-weight: 600; text-decoration: none; white-space: nowrap;
 }
 a.footer-link:hover { text-decoration: underline; text-underline-offset: 3px; }
 a.footer-link:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 2px; }
@@ -21,7 +21,6 @@ img.footer-link-icon { border-radius: 5px; }
 /* Narrower screens: the five links wrap onto centred rows. */
 @media (max-width: 1023px) {
   .footer-links { flex-wrap: wrap; justify-content: center; column-gap: 20px; }
-  a.footer-link { font-size: 15px; } /* keeps all five on one row on tablets */
 }
 @media (max-width: 767px) {
   .footer-links { gap: 16px 24px; padding-block: 32px; }

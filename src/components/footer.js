@@ -46,7 +46,7 @@ export function createFooter() {
     contactLink(corporate.website, corporate.website_href, 'globe'),
     contactLink('Facebook', corporate.facebook_href, 'facebook'),
     contactLink('WhatsApp', `https://wa.me/${digits}`, 'whatsapp'),
-    contactLink('Zalo OA', corporate.zalo_href, 'zalo'),
+    contactLink(corporate.zalo_label, corporate.zalo_href, 'zalo'),
   );
   band.append(links);
 
