@@ -5,8 +5,10 @@
 
 
 .footer-band { border-top: 3px solid var(--hyperion-red, #e63720); color: #fff; }
-/* Aligns with the page's .container so the row lines up with the content above. */
-.footer-links { display: flex; justify-content: space-between; align-items: center; gap: 12px 28px; padding-block: 36px; }
+/* Right-aligned: the links sit together at the right edge of the page's .container (same edge as the content above). */
+.footer-links { display: flex; justify-content: flex-end; align-items: center; gap: 12px 40px; padding-block: 36px; }
+/* "Contact:" label directly before the first link, part of the right-aligned group. */
+.footer-title { margin-right: -16px; color: #ff8a73; font-size: 18px; line-height: 1.4; font-weight: 700; white-space: nowrap; }
 
 a.footer-link {
   display: inline-flex; align-items: center; gap: 8px; min-height: 0; padding: 0;
@@ -18,11 +20,12 @@ a.footer-link:focus-visible { outline: 2px solid #fff; outline-offset: 4px; bord
 .footer-link-icon svg { width: 100%; height: 100%; }
 img.footer-link-icon { border-radius: 5px; }
 
-/* Narrower screens: the five links wrap onto centred rows. */
+/* Tablets: still right-aligned, closer together so all five stay on one row. Phones: centred wrapped rows. */
 @media (max-width: 1023px) {
-  .footer-links { flex-wrap: wrap; justify-content: center; column-gap: 20px; }
+  .footer-links { flex-wrap: wrap; column-gap: 20px; }
+  .footer-title { display: none; } /* no spare room beside the links below 1024px */
 }
 @media (max-width: 767px) {
-  .footer-links { gap: 16px 24px; padding-block: 32px; }
+  .footer-links { justify-content: center; gap: 16px 24px; padding-block: 32px; }
   a.footer-link { min-height: 32px; } /* comfortable tap target */
 }

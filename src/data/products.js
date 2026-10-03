@@ -33,7 +33,7 @@ export const SIZES = Object.freeze(LIST_SIZES.map(size => ({
 
 export const ADD_ONS = Object.freeze([
   { id: 'reflective', label_en: 'Reflective tape', label_vi: 'Băng phản quang' },
-  { id: 'fireproof', label_en: 'Fireproof canvas', label_vi: 'Vải bạt chống cháy' },
+  { id: 'fireproof', label_en: 'Fireproof canvas', label_vi: 'Vải chống cháy' },
 ]);
 
 const cents = value => Math.round(value * 100);

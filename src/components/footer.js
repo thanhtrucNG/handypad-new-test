@@ -40,8 +40,12 @@ export function createFooter() {
   band.id = 'contact';
   band.setAttribute('aria-label', t('Contact'));
   const links = element('div', 'container footer-links');
+  // "Contact:" leads the row of links on wide screens; the nav's aria-label already says it.
+  const heading = element('span', 'footer-title', `${t('Contact')}:`);
+  heading.setAttribute('aria-hidden', 'true');
   const digits = corporate.phone_href.replace(/\D/g, '');
   links.append(
+    heading,
     contactLink(corporate.email, `mailto:${corporate.email}`, 'mail'),
     contactLink(corporate.website, corporate.website_href, 'globe'),
     contactLink('Facebook', corporate.facebook_href, 'facebook'),

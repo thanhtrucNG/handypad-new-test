@@ -92,7 +92,7 @@ export function createOrderCompletion(checkout) {
     { value: 'card', label: 'Card (Visa, Mastercard)', logo: 'card.png' },
     { value: 'paypal', label: 'PayPal', logo: 'paypal.png' },
     { value: 'zalopay', label: 'ZaloPay', logo: 'zalopay.png' },
-    { value: 'bank_transfer', label: 'Bank Transfer / VietQR', logo: 'vietqr.png' },
+    { value: 'bank_transfer', label: 'Bank Transfer', logo: 'vietqr.png' },
   ];
   function choices(title, options, onSelect) {
     const group = element('fieldset', 'payment-choice-group payment-methods');
