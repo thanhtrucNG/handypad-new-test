@@ -3,7 +3,9 @@ import { subdivisionsFor } from './subdivisions.js';
 export const DRAFT_KEY = 'handypad.order-draft.v1';
 export const CUSTOMER_FIELDS = ['fullName', 'company', 'email', 'phone'];
 export const SHIPPING_FIELDS = ['address', 'cityProvince', 'country', 'countryCode'];
-export const AMOUNT_OPTIONS = ['deposit', 'full'];
+// Orders are always paid in full (the deposit option was removed 2026-10-01). The payload keeps
+// `amountOption: 'full'` so the payment service receives the same order shape as before.
+export const AMOUNT_OPTION = 'full';
 export const PAYMENT_METHODS = ['card', 'zalopay', 'bank_transfer'];
 const cleanFields = (value, fields) => Object.fromEntries(fields.map(key => [key, typeof value?.[key] === 'string' ? value[key].slice(0, 500) : '']));
 
@@ -16,7 +18,6 @@ export function restoreDraft(storage) {
   return {
     customer: cleanFields(saved?.customer, CUSTOMER_FIELDS),
     shipping,
-    amountOption: AMOUNT_OPTIONS.includes(saved?.amountOption) ? saved.amountOption : null,
     method: PAYMENT_METHODS.includes(saved?.method) ? saved.method : null,
   };
 }
@@ -39,18 +40,7 @@ export function validateContact(customer, shipping) {
   return errors;
 }
 
-export function paymentAmounts(subtotal, currency, option, depositVND = null, depositUSD = 5) {
-  const approvedUSD = Number.isFinite(depositUSD) && depositUSD > 0 ? depositUSD : 5;
-  const depositAmount = currency === 'USD' ? approvedUSD : Number.isSafeInteger(depositVND) && depositVND > 0 ? depositVND : null;
-  if (!AMOUNT_OPTIONS.includes(option)) return { depositAmount, amountDueNow: null, remainingProductBalance: null };
-  if (option === 'deposit' && depositAmount === null) return { depositAmount, amountDueNow: null, remainingProductBalance: null };
-  const factor = currency === 'VND' ? 1 : 100;
-  const subtotalMinor = Math.max(0, Math.round(subtotal * factor));
-  const dueMinor = option === 'full' ? subtotalMinor : Math.min(subtotalMinor, Math.round(depositAmount * factor));
-  return { depositAmount, amountDueNow: dueMinor / factor, remainingProductBalance: (subtotalMinor - dueMinor) / factor };
-}
-
-export function buildOrderDraft(items, fields, currency, config = {}, session = {}) {
+export function buildOrderDraft(items, fields, currency, session = {}) {
   const factor = currency === 'VND' ? 1 : 100;
   const orderItems = items.map(item => ({
     sku: item.id, displayName: item.display_name, size: item.dimensions,
@@ -64,8 +54,7 @@ export function buildOrderDraft(items, fields, currency, config = {}, session = 
     shipping: { ...cleanFields(fields.shipping, SHIPPING_FIELDS), feeStatus: 'to_be_confirmed' },
     merchandiseSubtotal,
     payment: {
-      amountOption: fields.amountOption,
-      ...paymentAmounts(merchandiseSubtotal, currency, fields.amountOption, config.depositVND, config.depositUSD),
+      amountOption: AMOUNT_OPTION, amountDueNow: merchandiseSubtotal,
       method: fields.method, status: session.status ?? 'idle',
       transactionId: session.transactionId ?? null, amountPaid: session.amountPaid ?? null,
     },

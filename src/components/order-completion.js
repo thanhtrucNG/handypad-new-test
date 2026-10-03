@@ -10,15 +10,12 @@ import { paymentErrorMessage } from '../checkout/card-validation.js';
 
 export function createPaymentSummary(order, compact = false) {
   const list = element('dl', compact ? 'payment-summary summary-payment' : 'payment-summary');
-  const p = order.payment;
-  const money = value => value === null ? t('Currently unavailable') : formatPrice(value, order.currency);
   const rows = [
-    ['Merchandise subtotal', money(order.merchandiseSubtotal)],
+    ['Merchandise subtotal', formatPrice(order.merchandiseSubtotal, order.currency)],
     ['Shipping fee', t('To be confirmed')],
-    ['Remaining balance', money(p.remainingProductBalance)],
   ];
   for (const [label, value] of rows) {
-    const row = element('div', label.endsWith('due now') ? 'payment-due-row' : ''); row.append(element('dt', '', t(label)), element('dd', label === 'Shipping fee' ? 'shipping-status' : '', value)); list.append(row);
+    const row = element('div'); row.append(element('dt', '', t(label)), element('dd', label === 'Shipping fee' ? 'shipping-status' : '', value)); list.append(row);
   }
   return list;
 }
@@ -80,39 +77,32 @@ export function createOrderCompletion(checkout) {
       const button = element('button', 'payment-choice'); button.type = 'button'; button.dataset.value = value;
       const copy = element('span', 'payment-choice-copy');
       copy.append(element('strong', 'payment-choice-title', t(label)));
-      if (kind === 'amounts') {
-        button.append(copy, element('strong', 'payment-choice-price'));
-      } else {
-        const radio = element('span', 'payment-method-indicator'); radio.setAttribute('aria-hidden', 'true');
-        const tile = element('span', 'payment-method-icon'); tile.setAttribute('aria-hidden', 'true');
-        const methodIcon = value === 'card' ? 'card' : value === 'zalopay' ? 'wallet' : 'bank'; tile.append(icon(methodIcon));
-        const availability = element('span', 'method-availability'); availability.id = `availability-${value}`; copy.append(availability);
-        const brands = element('span', 'payment-method-brands');
-        if (value === 'card') {
-          button.setAttribute('aria-label', t('Card — Visa / Mastercard'));
-          for (const brand of ['visa', 'mastercard']) {
-            const frame = element('span', `payment-logo payment-logo-${brand}`);
-            const image = element('img'); image.src = `${'./'}assets/${brand}.png`; image.alt = brand === 'visa' ? 'Visa' : 'Mastercard';
-            frame.append(image); brands.append(frame);
-          }
-        } else {
-          const brand = value === 'zalopay' ? 'zalopay' : 'vietqr';
-          if (value === 'bank_transfer') button.setAttribute('aria-label', t('Bank Transfer / VietQR'));
+      const radio = element('span', 'payment-method-indicator'); radio.setAttribute('aria-hidden', 'true');
+      const tile = element('span', 'payment-method-icon'); tile.setAttribute('aria-hidden', 'true');
+      const methodIcon = value === 'card' ? 'card' : value === 'zalopay' ? 'wallet' : 'bank'; tile.append(icon(methodIcon));
+      const availability = element('span', 'method-availability'); availability.id = `availability-${value}`; copy.append(availability);
+      const brands = element('span', 'payment-method-brands');
+      if (value === 'card') {
+        button.setAttribute('aria-label', t('Card — Visa / Mastercard'));
+        for (const brand of ['visa', 'mastercard']) {
           const frame = element('span', `payment-logo payment-logo-${brand}`);
-          const image = element('img'); image.src = `${'./'}assets/${brand === 'zalopay' ? 'Zalopay-logo.png' : 'vietqr.png'}`;
-          image.alt = value === 'zalopay' ? 'ZaloPay' : 'VietQR'; frame.append(image); brands.append(frame);
+          const image = element('img'); image.src = `${'./'}assets/${brand}.png`; image.alt = brand === 'visa' ? 'Visa' : 'Mastercard';
+          frame.append(image); brands.append(frame);
         }
-        button.append(radio, tile, copy, brands); button.setAttribute('aria-describedby', availability.id);
+      } else {
+        const brand = value === 'zalopay' ? 'zalopay' : 'vietqr';
+        if (value === 'bank_transfer') button.setAttribute('aria-label', t('Bank Transfer / VietQR'));
+        const frame = element('span', `payment-logo payment-logo-${brand}`);
+        const image = element('img'); image.src = `${'./'}assets/${brand === 'zalopay' ? 'Zalopay-logo.png' : 'vietqr.png'}`;
+        image.alt = value === 'zalopay' ? 'ZaloPay' : 'VietQR'; frame.append(image); brands.append(frame);
       }
+      button.append(radio, tile, copy, brands); button.setAttribute('aria-describedby', availability.id);
       button.setAttribute('aria-pressed', 'false'); button.addEventListener('click', () => onSelect(value));
       cards.append(button); buttons.set(value, button);
     }
     group.append(cards); payment.content.append(group); return buttons;
   }
-  const amounts = choices('Choose payment option', 'amounts', [
-    ['deposit', 'Deposit'],
-    ['full', 'Pay in full'],
-  ], checkout.selectAmount);
+  // Orders are paid in full: the step goes straight to the payment method and its pay button.
   const methods = choices('Payment method', 'methods', [['card', 'Card'], ['zalopay', 'ZaloPay'], ['bank_transfer', 'Bank Transfer / VietQR']], checkout.selectMethod);
   const cta = element('button', 'button button-primary payment-cta'); cta.type = 'button';
   cta.addEventListener('click', () => modal.open(cta));
@@ -152,14 +142,6 @@ export function createOrderCompletion(checkout) {
     }
     // City / Province depends on the country, so it opens once a country is chosen.
     inputs.get('cityProvince').input.disabled = !order.shipping.countryCode && !order.shipping.cityProvince;
-    for (const [value, button] of amounts) {
-      button.disabled = !state.amountAvailability[value];
-      button.setAttribute('aria-pressed', String(!button.disabled && value === p.amountOption));
-    }
-    amounts.get('full').querySelector('.payment-choice-price').textContent = formatPrice(order.merchandiseSubtotal, order.currency);
-    const depositDue = p.depositAmount === null ? null : Math.min(p.depositAmount, order.merchandiseSubtotal);
-    amounts.get('deposit').querySelector('.payment-choice-title').textContent = t('Deposit');
-    amounts.get('deposit').querySelector('.payment-choice-price').textContent = depositDue === null ? '—' : formatPrice(depositDue, order.currency);
     for (const [value, button] of methods) {
       button.disabled = !state.methodAvailability[value];
       button.setAttribute('aria-pressed', String(!button.disabled && value === p.method));
@@ -194,10 +176,10 @@ export function createOrderCompletion(checkout) {
     submitReference.disabled = busy || !reference.value.trim();
     confirmation.hidden = p.status !== 'confirmed'; confirmation.replaceChildren();
     if (p.status === 'confirmed') {
-      confirmation.append(element('h3', '', t(p.amountOption === 'deposit' ? 'Deposit received' : 'Payment received')));
+      confirmation.append(element('h3', '', t('Payment received')));
       const details = element('dl', 'payment-summary');
       const methodLabel = methods.get(p.method).getAttribute('aria-label') || methods.get(p.method).querySelector('.payment-choice-title').textContent;
-      for (const [label, value] of [['Order reference', order.orderId], ['Amount paid', formatPrice(p.amountPaid, order.currency)], ...(p.amountOption === 'deposit' ? [['Remaining product balance', formatPrice(p.remainingProductBalance, order.currency)]] : []), ['Payment method', methodLabel], ['Shipping fee', t('To be confirmed')]]) {
+      for (const [label, value] of [['Order reference', order.orderId], ['Amount paid', formatPrice(p.amountPaid, order.currency)], ['Payment method', methodLabel], ['Shipping fee', t('To be confirmed')]]) {
         const row = element('div'); row.append(element('dt', '', t(label)), element('dd', '', value)); details.append(row);
       }
       confirmation.append(details, element('p', '', t('Shipping fee will be confirmed separately')));

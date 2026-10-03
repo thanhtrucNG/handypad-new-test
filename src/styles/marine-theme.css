@@ -282,8 +282,7 @@ h1, h2, h3 { color: var(--hyperion-navy-950); }
 .order-counts { color: #d0dde6; }
 .order-totals { border-top-color: rgb(255 255 255 / 20%); }
 .order-total-line > span { color: #d1dde5; }
-.summary-shell[data-financial-state='payment'] .order-total-amount,
-.summary-payment .payment-due-row dd { color: var(--hyperion-coral); }
+.summary-shell[data-financial-state='payment'] .order-total-amount { color: var(--hyperion-coral); }
 .summary-next-action {
   background: var(--hyperion-red);
   border-color: var(--hyperion-red);
@@ -313,8 +312,6 @@ h1, h2, h3 { color: var(--hyperion-navy-950); }
   background: #e7edf1;
   border-color: #d0dae1;
 }
-.payment-choice-price,
-.checkout-totals .payment-due-row dd { color: var(--hyperion-red); }
 .payment-method-icon {
   border-color: var(--hyperion-border-soft);
   background: #f8fbfd;
@@ -348,8 +345,8 @@ h1, h2, h3 { color: var(--hyperion-navy-950); }
 }
 .payment-modal-due strong { color: #ff947d; }
 
-/* Footer: preserve the existing asset and content; refine contrast and hierarchy only. */
-.site-footer {
+/* Footer band: the ocean asset under a deep navy wash, as on the specs catalogue. */
+.footer-band {
   background-color: var(--hyperion-navy-950);
   background-image:
     linear-gradient(

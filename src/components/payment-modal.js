@@ -141,7 +141,7 @@ export function createPaymentModal(checkout) {
     }
     update = current => {
       const p = current.order.payment, pending = simulation ? ['pending','awaiting_confirmation'].includes(current.simulationStatus) : ['pending','awaiting_confirmation'].includes(p.status);
-      dueLabel.textContent = t(p.amountOption === 'deposit' ? 'Deposit due now' : 'Full product payment due now'); dueValue.textContent = formatPrice(p.amountDueNow,current.order.currency);
+      dueLabel.textContent = t('Amount due now'); dueValue.textContent = formatPrice(p.amountDueNow,current.order.currency);
       formError.textContent = current.error ? t(paymentErrorMessage(current.error)) : ''; formError.hidden = !current.error;
       status.textContent = current.busy ? t('Processing…') : p.status === 'confirmed' ? t('Payment confirmed') : method === 'bank_transfer' && pending ? t('Waiting for transfer confirmation') : pending ? t('Waiting for payment confirmation') : '';
       action.textContent = t(current.busy ? 'Processing…' : method === 'zalopay' ? pending ? 'Reopen payment window' : 'Open payment window' : method === 'bank_transfer' ? 'View bank transfer details' : 'Pay');

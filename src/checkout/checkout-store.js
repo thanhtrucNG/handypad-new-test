@@ -1,4 +1,4 @@
-import { AMOUNT_OPTIONS, PAYMENT_METHODS, CUSTOMER_FIELDS, SHIPPING_FIELDS, DRAFT_KEY, restoreDraft, validateContact, buildOrderDraft } from './order-draft.js';
+import { PAYMENT_METHODS, CUSTOMER_FIELDS, SHIPPING_FIELDS, DRAFT_KEY, restoreDraft, validateContact, buildOrderDraft } from './order-draft.js';
 import { PaymentServiceError, validatePaymentResponse } from './payment-service.js';
 import { countryByCode } from './countries.js';
 
@@ -8,22 +8,14 @@ export function createCheckoutStore({ cart, storage, currency = 'USD', config = 
   let provinceCountry = fields.shipping.countryCode;
   const paymentMode = config.paymentMode === 'simulation' ? 'simulation' : 'live';
   let simulationStatus = 'idle';
-  const depositUSD = config.depositUSD ?? 5;
-  const amountAvailability = {
-    full: true,
-    deposit: currency === 'USD'
-      ? Number.isFinite(depositUSD) && depositUSD > 0
-      : Number.isSafeInteger(config.depositVND) && config.depositVND > 0,
-  };
   const methodAvailability = Object.fromEntries(PAYMENT_METHODS.map(method => [method, paymentMode === 'simulation' || (Boolean(service.configured) && service.capabilities?.[method] === true)]));
-  // Restore contact data, but never restore a selected option that is unavailable now.
-  if (!amountAvailability[fields.amountOption]) fields.amountOption = null;
+  // Restore contact data, but never restore a payment method that is unavailable now.
   if (!methodAvailability[fields.method]) fields.method = null;
   const listeners = new Set();
   let session = {}, revision = 0, busy = false, error = null;
   let attemptKey = null;
-  const draft = () => buildOrderDraft(cart.getItems(), fields, currency, config, session);
-  const fingerprint = () => JSON.stringify(buildOrderDraft(cart.getItems(), fields, currency, config));
+  const draft = () => buildOrderDraft(cart.getItems(), fields, currency, session);
+  const fingerprint = () => JSON.stringify(buildOrderDraft(cart.getItems(), fields, currency));
   try {
     const attempt = JSON.parse(storage?.getItem(ATTEMPT_KEY));
     if (paymentMode === 'live' && attempt?.fingerprint === fingerprint() && typeof attempt.key === 'string') {
@@ -42,8 +34,8 @@ export function createCheckoutStore({ cart, storage, currency = 'USD', config = 
     const errors = validateContact(order.customer, order.shipping);
     const shippingUnlocked = order.items.length > 0;
     const paymentUnlocked = shippingUnlocked && Object.keys(errors).length === 0;
-    return { order, errors, shippingUnlocked, paymentUnlocked, busy, error, paymentMode, simulationStatus, configured: service.configured, amountAvailability, methodAvailability,
-      canPay: paymentUnlocked && order.payment.amountDueNow !== null && methodAvailability[fields.method] === true,
+    return { order, errors, shippingUnlocked, paymentUnlocked, busy, error, paymentMode, simulationStatus, configured: service.configured, methodAvailability,
+      canPay: paymentUnlocked && methodAvailability[fields.method] === true,
       checkoutURL: session.checkoutURL ?? null, bank: session.bank ?? null };
   }
   function publish() {
@@ -100,7 +92,6 @@ export function createCheckoutStore({ cart, storage, currency = 'USD', config = 
       if (group === 'shipping' && key === 'country') fields.shipping.countryCode = '';
       invalidate();
     },
-    selectAmount(value) { if (AMOUNT_OPTIONS.includes(value) && amountAvailability[value] && fields.amountOption !== value) { fields.amountOption = value; invalidate(); } },
     selectMethod(value) { if (PAYMENT_METHODS.includes(value) && methodAvailability[value] && fields.method !== value) { fields.method = value; invalidate(); } },
     startPayment() {
       if (!snapshot().canPay || busy || (session.transactionId && session.status !== 'failed')) return Promise.resolve();
