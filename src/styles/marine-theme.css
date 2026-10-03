@@ -312,16 +312,6 @@ h1, h2, h3 { color: var(--hyperion-navy-950); }
   background: #e7edf1;
   border-color: #d0dae1;
 }
-.payment-method-icon {
-  border-color: var(--hyperion-border-soft);
-  background: #f8fbfd;
-  color: var(--hyperion-navy-800);
-}
-.payment-methods .payment-choice[aria-pressed='true'] .payment-method-icon {
-  border-color: #ffb6a7;
-  background: #fffaf8;
-  color: var(--hyperion-red);
-}
 .country-options { border-color: var(--hyperion-border); }
 .country-option:hover,
 .country-option[aria-selected='true'] { background: var(--hyperion-red-soft); }

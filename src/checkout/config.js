@@ -4,5 +4,5 @@ export const checkoutConfig = Object.freeze({
   paymentMode: 'simulation',
   apiBase: null,
   // Enable each method only after its backend/provider integration is ready.
-  methods: Object.freeze({ card: false, zalopay: false, bank_transfer: false }),
+  methods: Object.freeze({ card: false, paypal: false, zalopay: false, bank_transfer: false }),
 });

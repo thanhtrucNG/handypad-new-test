@@ -17,7 +17,7 @@ export function createPaymentService({ apiBase = null, methods = {} } = {}, fetc
   }
   return {
     configured: Boolean(apiBase),
-    capabilities: Object.fromEntries(['card', 'zalopay', 'bank_transfer'].map(method => [method, Boolean(apiBase) && methods[method] === true])),
+    capabilities: Object.fromEntries(['card', 'paypal', 'zalopay', 'bank_transfer'].map(method => [method, Boolean(apiBase) && methods[method] === true])),
     createOrderDraft: (draft, idempotencyKey) => request('/orders', { draft, idempotencyKey }),
     createPayment: (orderId, payment, idempotencyKey) => request(`/orders/${encodeURIComponent(orderId)}/payments`, { payment, idempotencyKey }),
     getPaymentStatus: (orderId, transactionId) => request(`/orders/${encodeURIComponent(orderId)}/payments/${encodeURIComponent(transactionId)}`),

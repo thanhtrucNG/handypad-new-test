@@ -1,4 +1,4 @@
-import { PAYMENT_METHODS, CUSTOMER_FIELDS, SHIPPING_FIELDS, DRAFT_KEY, restoreDraft, validateContact, buildOrderDraft } from './order-draft.js';
+import { PAYMENT_METHODS, methodOffered, CUSTOMER_FIELDS, SHIPPING_FIELDS, DRAFT_KEY, restoreDraft, validateContact, buildOrderDraft } from './order-draft.js';
 import { PaymentServiceError, validatePaymentResponse } from './payment-service.js';
 import { countryByCode } from './countries.js';
 
@@ -8,7 +8,7 @@ export function createCheckoutStore({ cart, storage, currency = 'USD', config = 
   let provinceCountry = fields.shipping.countryCode;
   const paymentMode = config.paymentMode === 'simulation' ? 'simulation' : 'live';
   let simulationStatus = 'idle';
-  const methodAvailability = Object.fromEntries(PAYMENT_METHODS.map(method => [method, paymentMode === 'simulation' || (Boolean(service.configured) && service.capabilities?.[method] === true)]));
+  const methodAvailability = Object.fromEntries(PAYMENT_METHODS.map(method => [method, methodOffered(method, currency) && (paymentMode === 'simulation' || (Boolean(service.configured) && service.capabilities?.[method] === true))]));
   // Restore contact data, but never restore a payment method that is unavailable now.
   if (!methodAvailability[fields.method]) fields.method = null;
   const listeners = new Set();
@@ -31,7 +31,7 @@ export function createCheckoutStore({ cart, storage, currency = 'USD', config = 
 
   function snapshot() {
     const order = draft();
-    const errors = validateContact(order.customer, order.shipping);
+    const errors = validateContact(order.customer, order.shipping, order.vatInvoice);
     const shippingUnlocked = order.items.length > 0;
     const paymentUnlocked = shippingUnlocked && Object.keys(errors).length === 0;
     return { order, errors, shippingUnlocked, paymentUnlocked, busy, error, paymentMode, simulationStatus, configured: service.configured, methodAvailability,
@@ -92,6 +92,8 @@ export function createCheckoutStore({ cart, storage, currency = 'USD', config = 
       if (group === 'shipping' && key === 'country') fields.shipping.countryCode = '';
       invalidate();
     },
+    // Optional VAT invoice: when on, Company and Tax code become required (see validateContact).
+    setInvoice(value) { if (fields.wantsInvoice !== Boolean(value)) { fields.wantsInvoice = Boolean(value); invalidate(); } },
     selectMethod(value) { if (PAYMENT_METHODS.includes(value) && methodAvailability[value] && fields.method !== value) { fields.method = value; invalidate(); } },
     startPayment() {
       if (!snapshot().canPay || busy || (session.transactionId && session.status !== 'failed')) return Promise.resolve();

@@ -9,6 +9,12 @@
 .shipping-field input[aria-invalid='true'] { border-color: var(--accent-dark); }
 .shipping-field input:disabled { background: #eef3f6; border-color: #c3cfd8; color: var(--muted); cursor: not-allowed; }
 .field-error { font-size: var(--text-xs); color: var(--accent-dark); }
+/* Optional VAT invoice: a checkbox row under the address; ticking it reveals the Tax code field. */
+.invoice-option { gap: 4px; }
+.shipping-field .invoice-check { display: inline-flex; align-items: center; gap: 10px; width: fit-content; min-height: 32px; font-size: var(--text-base); font-weight: 600; cursor: pointer; }
+.shipping-field .invoice-check input { flex: none; width: 20px; min-width: 20px; height: 20px; min-height: 20px; margin: 0; padding: 0; accent-color: var(--hyperion-red, #e63720); cursor: pointer; }
+.invoice-hint { padding-left: 30px; color: var(--muted); font-size: var(--text-sm); line-height: 1.4; }
+.shipping-field[hidden] { display: none; }
 .shipping-fee { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: var(--text-sm); border-top: 1px solid var(--line); padding-top: var(--space-3); }
 .payment-choice-group { min-width: 0; margin: 0; padding: 0; border: 0; }
 #order-payment { container-type: inline-size; }
@@ -41,6 +47,8 @@
 .payment-logo-mastercard { width: 44px; height: 28px; }
 .payment-logo-mastercard img { width: 100%; height: auto; }
 .payment-logo-zalopay { flex: 0 0 76px; height: 24px; }
+.payment-logo-paypal { flex: 0 0 84px; height: 24px; }
+.payment-logo-paypal img { width: 100%; height: auto; max-height: 24px; object-fit: contain; }
 .payment-logo-zalopay img { width: 100%; height: auto; max-height: 24px; object-fit: contain; }
 .payment-logo-vietqr { flex: 0 0 64px; height: 24px; }
 .payment-logo-vietqr img { width: 100%; height: auto; }
@@ -108,6 +116,9 @@
 .simulation-gateway { display: grid; justify-items: center; gap: 16px; padding: 18px; border: 1px solid #708899; border-radius: 8px; }
 .simulation-gateway .button { margin-top: 0; width: 100%; }
 .zalopay-gateway-logo { width: min(150px, 52%); height: auto; object-fit: contain; }
+/* The pop-up is dark navy; the logo's dark-blue lettering needs a white plate to stay readable. */
+.paypal-modal-logo { display: block; box-sizing: content-box; width: min(150px, 50%); height: auto; margin: 4px auto 0; padding: 12px 20px; border-radius: 8px; background: #fff; }
+.paypal-modal-note { margin: 12px 0 0; text-align: center; line-height: 1.5; }
 .bank-modal-no-qr { grid-template-columns: 1fr; }
 .bank-modal-no-qr .bank-modal-qr { display: none; }
 @media (max-width: 600px) {
@@ -133,26 +144,20 @@
 }
 
 /* Preserve the approved Phase 15 payment presentation. */
-.payment-methods .payment-choice { grid-template-columns: 20px 40px minmax(0,1fr) auto; align-items: center; align-content: center; column-gap: 12px; min-height: 62px; padding: 6px 12px; }
+/* Rows: radio · square app-style icon · name. */
+.payment-methods .payment-choice { grid-template-columns: 20px 48px minmax(0,1fr); align-items: center; align-content: center; column-gap: 14px; min-height: 64px; padding: 8px 16px; text-align: left; }
 .payment-methods .payment-method-indicator { grid-column: 1; grid-row: 1; }
-.payment-method-icon { grid-column: 2; display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid #d8e1e7; border-radius: 10px; background: #f8fafb; color: var(--navy); }
-.payment-method-icon .icon { width: 23px; height: 23px; }
-.payment-methods .payment-choice-copy { grid-column: 3; display: grid; gap: 3px; align-content: center; }
-.payment-methods .payment-choice-title { font-size: var(--text-base); line-height: 1.25; }
+.payment-method-logo { grid-column: 2; display: block; width: 48px; height: 48px; border-radius: 11px; overflow: hidden; }
+.payment-method-logo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* VietQR is a wordmark on a transparent square: give it the white tile and hairline the others have built in. */
+.payment-method-logo-bank_transfer { background: #fff; box-shadow: inset 0 0 0 1px #d8e1e7; }
+.payment-choice:disabled .payment-method-logo { opacity: .5; }
+.payment-methods .payment-choice-copy { grid-column: 3; display: grid; gap: 2px; align-content: center; }
+.payment-methods .payment-choice-title { font-size: var(--text-base); line-height: 1.3; }
 .payment-methods .method-availability { grid-column: auto; font-size: var(--text-xs); }
-.payment-methods .payment-method-brands { grid-column: 4; display: flex; align-items: center; justify-content: flex-end; gap: 7px; min-width: 74px; }
-.payment-methods .payment-logo-visa { width: 62px; }
-.payment-methods .payment-logo-mastercard { width: 38px; }
-.payment-methods .payment-logo-zalopay { flex-basis: 76px; }
-.payment-methods .payment-logo-vietqr { flex-basis: 68px; }
-.payment-methods .payment-choice[aria-pressed='true'] .payment-method-icon { border-color: #ffb6a7; background: #fffaf8; color: var(--accent); }
 @container (max-width: 460px) {
-  .payment-methods .payment-choice { grid-template-columns: 20px 38px minmax(0,1fr) auto; gap: 8px; min-height: 58px; padding: 6px 9px; }
-  .payment-method-icon { width: 38px; height: 38px; }
-  .payment-methods .payment-logo-visa { width: 54px; }
-  .payment-methods .payment-logo-mastercard { width: 32px; }
-  .payment-methods .payment-logo-zalopay { flex-basis: 68px; }
-  .payment-methods .payment-logo-vietqr { flex-basis: 62px; }
+  .payment-methods .payment-choice { grid-template-columns: 20px 44px minmax(0,1fr); column-gap: 10px; min-height: 60px; padding: 8px 12px; }
+  .payment-method-logo { width: 44px; height: 44px; border-radius: 10px; }
 }
 
 
